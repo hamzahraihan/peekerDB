@@ -92,6 +92,10 @@ or a saved NAME. Env DATABASE_URL fills conn when no argument is given.
 		// A store that failed to load keeps refusing to save, so the
 		// file it could not read is not silently overwritten.
 	}
+	// The store may have to fall back to plain text; say so.
+	saved.Warn = func(msg string) {
+		fmt.Fprintln(os.Stderr, "peekerdb: warning:", msg)
+	}
 
 	if *connsF {
 		for _, p := range store.List() {

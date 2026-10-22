@@ -8,7 +8,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-func encryptPayload(plaintext []byte) ([]byte, error) {
+func encryptPayloadPlain(plaintext []byte) ([]byte, error) {
 	if len(plaintext) == 0 {
 		return plaintext, nil
 	}
@@ -28,7 +28,7 @@ func encryptPayload(plaintext []byte) ([]byte, error) {
 	return res, nil
 }
 
-func decryptPayload(ciphertext []byte) ([]byte, error) {
+func decryptPayloadPlain(ciphertext []byte) ([]byte, error) {
 	if len(ciphertext) == 0 {
 		return ciphertext, nil
 	}

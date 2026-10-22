@@ -27,6 +27,19 @@ type Store struct {
 	loadErr  error // why the file could not be read; such a store must not save
 }
 
+// encryptPayload encrypts the store before it is written. It is a
+// variable so a test can force the failure that would otherwise only
+// happen on a Windows host whose user key is unavailable.
+var encryptPayload = encryptPayloadPlain
+
+// decryptPayload reverses encryptPayload.
+var decryptPayload = decryptPayloadPlain
+
+// Warn reports something the user should know about their saved
+// connections — most importantly that the store could not be encrypted
+// and was written in the clear. The app sets it; the default is silent.
+var Warn = func(string) {}
+
 // DefaultDir is the directory peekerdb keeps all of its state in.
 func DefaultDir() (string, error) {
 	dir, err := os.UserConfigDir()
@@ -35,7 +48,6 @@ func DefaultDir() (string, error) {
 	}
 	return filepath.Join(dir, "peekerdb"), nil
 }
-
 func DefaultPath() (string, error) {
 	dir, err := DefaultDir()
 	if err != nil {
@@ -204,7 +216,14 @@ func (s *Store) persist(next []Profile) error {
 	}
 	payload, eerr := encryptPayload(append(data, '\n'))
 	if eerr != nil {
+		// The store holds database passwords. Writing them in the clear
+		// is a downgrade the user must know about, not a detail to
+		// swallow.
 		payload = append(data, '\n')
+		if Warn != nil {
+			Warn("saved connections could not be encrypted (" + eerr.Error() +
+				"); they were written in plain text to " + s.Path)
+		}
 	}
 	if err := writeAtomic(s.Path, payload, 0o600); err != nil {
 		return err

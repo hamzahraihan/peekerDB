@@ -2,7 +2,7 @@
 
 package saved
 
-func encryptPayload(plaintext []byte) ([]byte, error) {
+func encryptPayloadPlain(plaintext []byte) ([]byte, error) {
 	return plaintext, nil
 }
 

@@ -21,6 +21,11 @@ func Run(connStr string, store *saved.Store, readOnly bool) error {
 	if mouseDebug {
 		fmt.Fprintln(os.Stderr, "peekerdb: mouse debug log →", mouseLogPath())
 	}
+	// The store may have to fall back to plain text; say so on stderr
+	// rather than leaving the user to find it in the file.
+	saved.Warn = func(msg string) {
+		fmt.Fprintln(os.Stderr, "peekerdb: warning:", msg)
+	}
 	m := New(connStr, store)
 	m.readOnly = readOnly
 	p := tea.NewProgram(m)
