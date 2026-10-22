@@ -302,7 +302,7 @@ func (m Model) popupGeometry(paneW int) (top, left, boxW, nItems int) {
 	// Content width from plain text (never measure styled output).
 	cw := 0
 	for _, it := range m.completeItems[:min(nItems, len(m.completeItems))] {
-		if w := lipgloss.Width(it.Text+" "+it.Detail); w > cw {
+		if w := lipgloss.Width(it.Text + " " + it.Detail); w > cw {
 			cw = w
 		}
 	}

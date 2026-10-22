@@ -48,28 +48,28 @@ type Model struct {
 	editing   string // profile being edited, "" when adding
 	editConn  string // raw conn of the profile being edited, "" when adding
 
-	explorer    Explorer
-	filterInput textinput.Model
-	filtering   bool // sidebar filter input focused; keystrokes belong to it
+	explorer        Explorer
+	filterInput     textinput.Model
+	filtering       bool // sidebar filter input focused; keystrokes belong to it
 	gridFilterInput textinput.Model
 	gridFiltering   bool // grid find prompt open; keystrokes belong to it
-	sqlFileInput textinput.Model
-	sqlFiling    bool   // SQL file prompt open (open/save .sql)
-	sqlFileMode  string // "open" or "save" while sqlFiling
-	lastSQLPath  string // prefill for the next open/save prompt
-	sqlConfirmPath string // pending open path awaiting y/n on a dirty buffer
+	sqlFileInput    textinput.Model
+	sqlFiling       bool   // SQL file prompt open (open/save .sql)
+	sqlFileMode     string // "open" or "save" while sqlFiling
+	lastSQLPath     string // prefill for the next open/save prompt
+	sqlConfirmPath  string // pending open path awaiting y/n on a dirty buffer
 	// exportConfirmPath is a pending export target awaiting y/n before
 	// an existing file is replaced.
 	exportConfirmPath string
-	focusDetail bool // browse split: sidebar list vs detail pane
-	sidebarW    int  // sidebar width in cells, set on resize
-	tab         int  // 0 schema, 1 indexes, 2 rows
-	table       string
-	tableDDL    string // CREATE TABLE for the open table ("", when unavailable)
-	cols        []dbpkg.Column
-	indexes     []dbpkg.Index
-	sample      *dbpkg.Sample
-	count       int64
+	focusDetail       bool // browse split: sidebar list vs detail pane
+	sidebarW          int  // sidebar width in cells, set on resize
+	tab               int  // 0 schema, 1 indexes, 2 rows
+	table             string
+	tableDDL          string // CREATE TABLE for the open table ("", when unavailable)
+	cols              []dbpkg.Column
+	indexes           []dbpkg.Index
+	sample            *dbpkg.Sample
+	count             int64
 	// counts caches the sidebar's approximate counts keyed by
 	// QualTable.String() so opening a table whose count is already
 	// known costs no query.
@@ -126,21 +126,21 @@ type Model struct {
 	restoreTab    int
 	restoreFilter string
 	// Result export: E opens a path prompt drawn over the status line.
-	exporting    bool
+	exporting   bool
 	exportInput textinput.Model
 	// pendingExplain/pendingAnalyze apply to the next run only; the
 	// editor buffer is never rewritten with an EXPLAIN prefix.
 	pendingExplain bool
 	pendingAnalyze bool
-	readOnly bool // --read-only: refuse writes and cell edits with status
+	readOnly       bool // --read-only: refuse writes and cell edits with status
 	// Cell editing (rows tab): `e` edits the cursor's cell in place.
 	// Named cellEditing because Model.editing is the saved-profile editor.
-	cellEditing bool
-	cellInput   textinput.Model
-	cellModal       bool
-	cellModalCol    string
-	cellModalVal    string
-	cellModalOffset int
+	cellEditing        bool
+	cellInput          textinput.Model
+	cellModal          bool
+	cellModalCol       string
+	cellModalVal       string
+	cellModalOffset    int
 	historyModal       bool
 	historyFilterInput textinput.Model
 	historyEntries     []saved.HistoryEntry
@@ -151,8 +151,8 @@ type Model struct {
 	themeModal         bool
 	themeCursor        int
 	themeOriginal      string
-	pkMemoFor  string
-	pkMemoCols []string
+	pkMemoFor          string
+	pkMemoCols         []string
 
 	erLinks  []dbpkg.ForeignKey
 	erSeq    int
@@ -289,12 +289,12 @@ func New(connStr string, store *saved.Store) Model {
 		conns: cl, explorer: NewExplorer("", []string{}), count: -1, pageSize: 10, hoverTab: -1,
 		nameInput: nameInput, connInput: connInput, filterInput: filterInput,
 		gridFilterInput: gridFilterInput,
-		sqlFileInput: sqlFileInput,
-		connsItemH: cdelegate.Height() + cdelegate.Spacing(),
-		editor:     NewEditor(),
-		erFocus:    true, queryAffected: -1,
+		sqlFileInput:    sqlFileInput,
+		connsItemH:      cdelegate.Height() + cdelegate.Spacing(),
+		editor:          NewEditor(),
+		erFocus:         true, queryAffected: -1,
 		history: history, histIdx: -1,
-		theme:   "default",
+		theme: "default",
 	}
 	m.erMemo = &erMemo{}
 	m.hlMemo = &hlMemo{}

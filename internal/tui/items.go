@@ -13,7 +13,7 @@ type connItem struct {
 }
 
 func (c connItem) FilterValue() string { return c.name + " " + c.masked }
-func (c connItem) Title() string       {
+func (c connItem) Title() string {
 	if c.icon != "" {
 		return c.icon + c.name
 	}

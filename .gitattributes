@@ -1,0 +1,9 @@
+# Go source is always LF: gofmt writes LF, so a CRLF checkout would make
+# every file look unformatted.
+*.go text eol=lf
+
+# Keep the repository's text files readable in the diff.
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf

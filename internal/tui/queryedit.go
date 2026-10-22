@@ -3,20 +3,20 @@ package tui
 import (
 	"strings"
 
+	"charm.land/lipgloss/v2"
 	"github.com/alecthomas/chroma/v2"
 	"github.com/alecthomas/chroma/v2/lexers"
-	"charm.land/lipgloss/v2"
 )
 
 type Editor struct {
-	Lines     []string
-	CurLine   int
-	CurCol    int // rune offset within line
-	OffY      int // first visible line
-	selAnchor int // anchor line
+	Lines        []string
+	CurLine      int
+	CurCol       int // rune offset within line
+	OffY         int // first visible line
+	selAnchor    int // anchor line
 	selAnchorCol int // anchor column (rune offset); only used when !selLineWise
-	selActive bool
-	selLineWise bool // true = whole lines lo..hi (shift+up/down, shift+click, vertical drag)
+	selActive    bool
+	selLineWise  bool // true = whole lines lo..hi (shift+up/down, shift+click, vertical drag)
 }
 
 func NewEditor() Editor { return Editor{Lines: []string{""}} }

@@ -63,7 +63,7 @@ func TestShiftClickExtendsBlock(t *testing.T) {
 	if m.editor.CurLine != 0 {
 		t.Fatalf("plain click line 0, got %d", m.editor.CurLine)
 	}
-	u, _ = m.Update(	tea.MouseClickMsg{X: m.paneX() + 3, Y: queryEditorTop() + 2, Button: tea.MouseLeft, Mod: tea.ModShift})
+	u, _ = m.Update(tea.MouseClickMsg{X: m.paneX() + 3, Y: queryEditorTop() + 2, Button: tea.MouseLeft, Mod: tea.ModShift})
 	m = u.(Model)
 	lo, hi, active := m.editor.SelectedRange()
 	if !active || lo != 0 || hi != 2 {

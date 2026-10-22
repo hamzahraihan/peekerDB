@@ -91,6 +91,7 @@ func (h *History) Recent(maskedConn string, n int) []HistoryEntry {
 	}
 	return out
 }
+
 // All returns up to n entries across all connections, newest first.
 func (h *History) All(n int) []HistoryEntry {
 	if n <= 0 || len(h.entries) == 0 {

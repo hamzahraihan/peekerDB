@@ -144,7 +144,7 @@ func TestUpdateCellBindsTypedKey(t *testing.T) {
 	// A typed key addresses exactly its own row.
 	n, err := d.UpdateCell(context.Background(), QualTable{Name: "users"}, []string{"id"}, []any{int64(2)}, "name", "typed")
 	if err != nil {
-	t.Fatal(err)
+		t.Fatal(err)
 	}
 	if n != 1 {
 		t.Fatalf("a typed key must affect exactly 1 row, got %d", n)

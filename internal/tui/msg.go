@@ -13,8 +13,8 @@ type (
 		ddl     string // CREATE TABLE echo for the schema tab, "" when unavailable
 		sample  *dbpkg.Sample
 		count   int64
-		seq     int // detailSeq at request time; stale replies are dropped
-		conn    int // connSeq at request time; other-connection replies are dropped
+		seq     int   // detailSeq at request time; stale replies are dropped
+		conn    int   // connSeq at request time; other-connection replies are dropped
 		colsErr error // set only when db.Columns failed, so a column failure
 		// collapses the tree node while an unrelated failure does not
 		err error
@@ -27,7 +27,7 @@ type (
 		count int64
 		seq   int
 		conn  int
-	err   error
+		err   error
 	}
 	rowsPageMsg struct {
 		sample *dbpkg.Sample

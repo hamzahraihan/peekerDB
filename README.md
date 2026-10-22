@@ -77,6 +77,11 @@ Stored under the OS config dir (`peekerdb/connections.json`, file `0600`); passw
 The edit form shows the password as a placeholder. Leave it alone and the stored
 password is kept; type a new one to replace it.
 
+The query history and the last session are kept on disk too, in
+`history.json` and `session.json`. They hold the SQL you ran, not the
+connection string, but a query that embeds a secret puts that secret in the
+history file.
+
 ## Export
 
 In TUI press `E`: `.csv` `.tsv` `.json` `.md` `.sql` by extension. NULL is empty (JSON null).

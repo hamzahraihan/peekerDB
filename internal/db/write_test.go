@@ -121,7 +121,8 @@ func TestParseWriteTable(t *testing.T) {
 	}
 }
 
-func TestExecStmtSQLite(t *testing.T) {	d, err := Open(":memory:")
+func TestExecStmtSQLite(t *testing.T) {
+	d, err := Open(":memory:")
 	if err != nil {
 		t.Fatal(err)
 	}

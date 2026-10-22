@@ -92,7 +92,8 @@ func TestScrubConnSecretsRemovesEncodedPassword(t *testing.T) {
 	}
 }
 
-func TestCtrlSCopiesEditorText(t *testing.T) {	var got string
+func TestCtrlSCopiesEditorText(t *testing.T) {
+	var got string
 	old := clipboardWriteAll
 	clipboardWriteAll = func(s string) error { got = s; return nil }
 	defer func() { clipboardWriteAll = old }()

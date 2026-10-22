@@ -5,3 +5,10 @@
 *.sqlite3
 .impeccable/
 *.log
+
+# GoReleaser output
+dist/
+
+# Only the root fixtures are ignored; a test fixture under testdata/ is
+# meant to be committed.
+!internal/**/testdata/*.db

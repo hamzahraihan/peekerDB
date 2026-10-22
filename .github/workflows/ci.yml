@@ -19,5 +19,18 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           cache: true
+      # gofmt writes LF, so the format check only makes sense on a LF
+      # checkout.
+      - name: Check formatting
+        if: runner.os == 'Linux'
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "these files are not gofmt-clean:"
+            echo "$unformatted"
+            gofmt -w .
+            git diff --stat
+            exit 1
+          fi
       - run: go vet ./...
       - run: go test ./...

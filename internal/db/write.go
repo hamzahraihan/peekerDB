@@ -466,6 +466,7 @@ func SplitStatements(sql string) []string {
 	}
 	return stmts
 }
+
 // ExecStmt runs a non-row-returning statement and reports rows affected.
 func (d *DB) ExecStmt(ctx context.Context, sql string) (int64, error) {
 	if d.Engine != nil {
@@ -478,6 +479,7 @@ func (d *DB) ExecStmt(ctx context.Context, sql string) (int64, error) {
 	}
 	return n, nil
 }
+
 // ApplyReadOnly configures the connection at the session/engine level to
 // refuse writes even if client-side validation is bypassed.
 //

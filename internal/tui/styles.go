@@ -17,7 +17,7 @@ var (
 	// Query buffer strip chips: deliberately NOT pills — the blue pill is
 	// reserved for detail tabs so the two stacked rows never compete.
 	activeBuf = lipgloss.NewStyle().Bold(true).Underline(true).Foreground(lipgloss.Color("#EAB308"))
-	hoverTab    = lipgloss.NewStyle().Underline(true).Bold(true).Foreground(lipgloss.Color("#00D7FF")).Background(lipgloss.Color("236")).Padding(0, 2)
+	hoverTab  = lipgloss.NewStyle().Underline(true).Bold(true).Foreground(lipgloss.Color("#00D7FF")).Background(lipgloss.Color("236")).Padding(0, 2)
 	// Line highlighter: the selected row anywhere (pickers, data tables).
 	selTitle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("230")).Background(lipgloss.Color("62")).Padding(0, 1)
 	selDesc  = lipgloss.NewStyle().Foreground(lipgloss.Color("254")).Background(lipgloss.Color("62")).Padding(0, 1)
@@ -144,9 +144,9 @@ var (
 	explorerConn  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("15"))
 	// Column rows: field name (bright) vs data type (cyan). Icons carry
 	// PK/FK meaning in addition to color so info is never color-only.
-	explorerCol = lipgloss.NewStyle().Foreground(lipgloss.Color("15"))
-	explorerPK  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#EAB308"))
-	explorerFK  = lipgloss.NewStyle().Foreground(lipgloss.Color("#67E8F9"))
+	explorerCol      = lipgloss.NewStyle().Foreground(lipgloss.Color("15"))
+	explorerPK       = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#EAB308"))
+	explorerFK       = lipgloss.NewStyle().Foreground(lipgloss.Color("#67E8F9"))
 	scrollTrackStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 	scrollThumbStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("15"))
 )
@@ -154,7 +154,7 @@ var (
 // Footer keybinding roles: keys bright, descriptions muted, separator dim.
 // Status lines use statusStyle so result meta never blends into shortcuts.
 var (
-	footKeyStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("15"))
+	footKeyStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("15"))
 	footDescStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 	statusStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("7"))
 )

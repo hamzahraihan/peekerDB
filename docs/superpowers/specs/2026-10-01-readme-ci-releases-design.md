@@ -1,5 +1,12 @@
 # README + CI + Releases Design — db-peek
 
+> **Superseded in part.** This doc predates the `db-peek` → `peekerdb`
+> rename and the module path fix. The install command is now
+> `go install github.com/hamzahraihan/peekerDB@latest`, the release
+> assets are `peekerdb_<os>_<arch>.tar.gz` (`.zip` on Windows), and the
+> module path is `github.com/hamzahraihan/peekerDB`. See
+> [docs/README.md](../README.md).
+
 Date: 2026-10-01
 Status: approved (approach A Minimal)
 Scope: README.md + MIT LICENSE + CI workflow + GoReleaser + tag release workflow + ldflags version wiring.

@@ -119,16 +119,16 @@ func (m Model) handleMouseClick(msg tea.MouseClickMsg) (tea.Model, tea.Cmd) {
 			if msg.Y == m.tabStripRow() {
 				return m.clickTabs(msg.X-m.paneX()-1, msg.Y)
 			}
+			return m.clickTable(msg.X-m.paneX()-1, msg.Y, msg.Mod.Contains(tea.ModShift))
+		}
+		return m, nil // gap, right margin, footer: noop
+	case screenForm:
+		return m.clickForm(msg.Y)
+	default:
+		if msg.Y == m.tabStripRow() {
+			return m.clickTabs(msg.X-m.paneX()-1, msg.Y)
+		}
 		return m.clickTable(msg.X-m.paneX()-1, msg.Y, msg.Mod.Contains(tea.ModShift))
-	}
-	return m, nil // gap, right margin, footer: noop
-case screenForm:
-	return m.clickForm(msg.Y)
-default:
-	if msg.Y == m.tabStripRow() {
-		return m.clickTabs(msg.X-m.paneX()-1, msg.Y)
-	}
-	return m.clickTable(msg.X-m.paneX()-1, msg.Y, msg.Mod.Contains(tea.ModShift))
 	}
 }
 
@@ -201,11 +201,11 @@ func (m Model) wheel(n int) (tea.Model, tea.Cmd) {
 				} else {
 					m.queryTable.MoveDown(steps)
 				}
-		case 4:
-			m.erPanY += n
-			if m.erPanY < 0 {
-				m.erPanY = 0
-			}
+			case 4:
+				m.erPanY += n
+				if m.erPanY < 0 {
+					m.erPanY = 0
+				}
 			default:
 				if up {
 					m.rowTable.MoveUp(steps)

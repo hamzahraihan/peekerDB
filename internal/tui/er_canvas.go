@@ -94,7 +94,7 @@ func erBoxLinesEx(t erTable, total int, selected, hovered bool) []string {
 	head := fitText("▦ "+t.name, w)
 	// v2 Width is border-box: +2 keeps rows (built w wide below) fitting
 	// the content area exactly, as under v1.
-	style := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color(CurrentTheme.Palette.ERBoxBorder)).Width(w+2)
+	style := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color(CurrentTheme.Palette.ERBoxBorder)).Width(w + 2)
 	switch {
 	case selected:
 		style = style.BorderForeground(lipgloss.Color(CurrentTheme.Palette.ERBoxSelBorder))
@@ -866,7 +866,6 @@ func erCorner(inX, inY, outX, outY int) rune {
 	}
 	return '─'
 }
-
 
 // sgn is the sign of n: 1, -1 or 0.
 func sgn(n int) int {

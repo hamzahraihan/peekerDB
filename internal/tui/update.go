@@ -786,6 +786,7 @@ func (m Model) themeToggleAllowed(key string) bool {
 	}
 	return true
 }
+
 // clearConnState drops every piece of per-connection UI state so the
 // next connection never shows the previous database's tables, counts,
 // columns, query results or ER diagram. Seq counters bump alongside so

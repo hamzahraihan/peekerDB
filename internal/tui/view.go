@@ -73,7 +73,7 @@ const (
 	// searchPad is the horizontal chrome outside the field's value area:
 	// two border cells, one space of padding per side, and the trailing
 	// cell the × affordance occupies.
-	searchPad = 5
+	searchPad        = 5
 	explorerFirstRow = 6
 )
 
@@ -156,8 +156,8 @@ func (m Model) browseView() string {
 	// v2 Width/Height are border-box (border inside): +2 restores the v1
 	// outer geometry (sidebarW / detailW+2 wide, contentH tall) that
 	// mouse hit-testing is computed against.
-	sideBox := paneBorder(!m.focusDetail).Width(innerW+2).Height(innerH+2).Render(strings.Join(side, "\n"))
-	detailBox := paneBorder(m.focusDetail).Width(detailW+2).Height(innerH+2).Render(strings.Join(right, "\n"))
+	sideBox := paneBorder(!m.focusDetail).Width(innerW + 2).Height(innerH + 2).Render(strings.Join(side, "\n"))
+	detailBox := paneBorder(m.focusDetail).Width(detailW + 2).Height(innerH + 2).Render(strings.Join(right, "\n"))
 	sideLines := strings.Split(sideBox, "\n")
 	detailLines := strings.Split(detailBox, "\n")
 	h := len(sideLines)
