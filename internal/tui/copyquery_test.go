@@ -77,6 +77,21 @@ func TestScrubConnSecrets(t *testing.T) {
 	}
 }
 
+// A password that needs percent-encoding must not survive in the dump
+// in its encoded form: the driver re-serializes the DSN, so the text
+// carries the encoded password even when the user typed a plain one.
+func TestScrubConnSecretsRemovesEncodedPassword(t *testing.T) {
+	conn := "postgres://u:p@ss@h:5432/db"
+	text := "dial postgres://u:p%40ss@h:5432/db?default_query_exec_mode=simple_protocol: password authentication failed"
+	got := scrubConnSecrets(text, conn)
+	if strings.Contains(got, "p%40ss") {
+		t.Fatalf("the encoded password leaked: %q", got)
+	}
+	if strings.Contains(got, "p@ss") {
+		t.Fatalf("the password leaked: %q", got)
+	}
+}
+
 func TestCtrlSCopiesEditorText(t *testing.T) {	var got string
 	old := clipboardWriteAll
 	clipboardWriteAll = func(s string) error { got = s; return nil }

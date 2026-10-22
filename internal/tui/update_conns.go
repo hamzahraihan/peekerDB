@@ -7,6 +7,8 @@ import (
 
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
+
+	"github.com/hamzahraihan/peekerDB/internal/saved"
 )
 
 // connsKey drives the saved-connection picker.
@@ -35,6 +37,7 @@ func (m Model) connsKey(msg tea.KeyPressMsg, key string) (tea.Model, tea.Cmd) {
 	case "a":
 		m.delArm = ""
 		m.editing = ""
+		m.editConn = ""
 		m.nameInput.SetValue("")
 		m.connInput.SetValue("")
 		m.formFocus = 0
@@ -51,8 +54,12 @@ func (m Model) connsKey(msg tea.KeyPressMsg, key string) (tea.Model, tea.Cmd) {
 		m.delArm = ""
 		p, _ := m.store.Get(sel.name)
 		m.editing = p.Name
+		m.editConn = p.Conn
 		m.nameInput.SetValue(p.Name)
-		m.connInput.SetValue(p.Conn)
+		// The form shows the password as a placeholder, never in the
+		// clear: the stored password is restored on save if the user
+		// leaves the slot alone.
+		m.connInput.SetValue(saved.Mask(p.Conn))
 		m.formFocus = 1
 		m.nameInput.Blur()
 		m.connInput.Focus()

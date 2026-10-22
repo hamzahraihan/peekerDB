@@ -45,6 +45,7 @@ type Model struct {
 	connInput textinput.Model
 	formFocus int    // 0 name, 1 conn
 	editing   string // profile being edited, "" when adding
+	editConn  string // raw conn of the profile being edited, "" when adding
 
 	explorer    Explorer
 	filterInput textinput.Model

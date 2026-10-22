@@ -7,6 +7,8 @@ import (
 
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
+
+	"github.com/hamzahraihan/peekerDB/internal/saved"
 )
 
 // formKey drives the add/edit connection form.
@@ -36,6 +38,10 @@ func (m Model) formKey(msg tea.KeyPressMsg, key string) (tea.Model, tea.Cmd) {
 			m.err = "name and connection string are both required"
 			return m, nil
 		}
+		// The form shows the password as a placeholder. If the user left
+		// it alone, keep the stored password rather than saving the
+		// placeholder as the new one.
+		conn = saved.MergeEditedConn(conn, m.editConn)
 		if err := m.store.Upsert(name, conn); err != nil {
 			m.err = err.Error()
 			return m, nil

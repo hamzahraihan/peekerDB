@@ -3,7 +3,7 @@ package saved
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
+
 	"os"
 	"path/filepath"
 	"sort"
@@ -24,6 +24,7 @@ type Store struct {
 	Path     string
 	profiles []Profile
 	pathErr  error // why Path is empty, when the config dir was unavailable
+	loadErr  error // why the file could not be read; such a store must not save
 }
 
 // DefaultDir is the directory peekerdb keeps all of its state in.
@@ -59,20 +60,37 @@ func New() *Store {
 // os.Rename replaces an existing destination on Windows (MoveFileEx
 // with MOVEFILE_REPLACE_EXISTING), POSIX, and every other platform Go
 // supports — no remove-then-rename is needed.
+//
+// The temp file has a random name. A predictable one could be planted
+// as a symlink and followed, and a pre-existing temp file would keep
+// its own permissions, which may be wider than perm.
 func writeAtomic(path string, data []byte, perm os.FileMode) error {
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, data, perm); err != nil {
+	// MkdirAll leaves an existing directory as it found it, so tighten a
+	// pre-existing one. Best effort: a directory owned by someone else
+	// must not stop the write.
+	_ = os.Chmod(dir, 0o700)
+	f, err := os.CreateTemp(dir, ".peekerdb-*.tmp")
+	if err != nil {
 		return err
 	}
-	if err := os.Rename(tmp, path); err != nil {
-		os.Remove(tmp)
+	tmp := f.Name()
+	defer os.Remove(tmp) // no-op once the rename succeeds
+	if err := f.Chmod(perm); err != nil {
+		f.Close()
 		return err
 	}
-	return nil
+	if _, err := f.Write(data); err != nil {
+		f.Close()
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmp, path)
 }
 
 func Load() (*Store, error) {
@@ -80,13 +98,21 @@ func Load() (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := &Store{Path: p}
-	data, err := os.ReadFile(p)
+	return loadAt(p)
+}
+
+// loadAt reads the saved connections from path. A file that cannot be
+// read or parsed yields a store that refuses to save, so the next write
+// cannot silently destroy the connections it failed to read.
+func loadAt(path string) (*Store, error) {
+	s := &Store{Path: path}
+	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return s, nil
 		}
-		return nil, err
+		s.loadErr = err
+		return s, err
 	}
 	decrypted, derr := decryptPayload(data)
 	if derr == nil {
@@ -94,7 +120,8 @@ func Load() (*Store, error) {
 	}
 	var profiles []Profile
 	if err := json.Unmarshal(data, &profiles); err != nil {
-		return nil, fmt.Errorf("parse %s: %w", p, err)
+		s.loadErr = err
+		return s, fmt.Errorf("parse %s: %w", path, err)
 	}
 	s.profiles = profiles
 	return s, nil
@@ -168,6 +195,9 @@ func (s *Store) persist(next []Profile) error {
 	if s.Path == "" {
 		return fmt.Errorf("saved connections have no path (config dir unavailable): %w", s.pathErr)
 	}
+	if s.loadErr != nil {
+		return fmt.Errorf("saved connections could not be read (%w); refusing to overwrite %s", s.loadErr, s.Path)
+	}
 	data, err := json.MarshalIndent(next, "", "  ")
 	if err != nil {
 		return err
@@ -181,16 +211,4 @@ func (s *Store) persist(next []Profile) error {
 	}
 	s.profiles = next
 	return nil
-}
-
-// Mask renders a conn string for display with any password removed.
-func Mask(raw string) string {
-	raw = strings.TrimSpace(raw)
-	if u, err := url.Parse(raw); err == nil && u.Host != "" {
-		if u.User != nil {
-			u.User = url.User(u.User.Username())
-		}
-		return u.Redacted()
-	}
-	return raw
 }

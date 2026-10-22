@@ -67,24 +67,48 @@ func scrubConnSecrets(text, connStr string) string {
 		return text
 	}
 	text = strings.ReplaceAll(text, connStr, saved.Mask(connStr))
-	if pass := connPassword(connStr); pass != "" {
+	for _, pass := range connPasswordForms(connStr) {
 		text = strings.ReplaceAll(text, pass, "***")
 	}
 	return text
 }
 
-// connPassword returns the password embedded in a URL-style conn string,
-// or "" when there is none.
-func connPassword(connStr string) string {
-	u, err := url.Parse(connStr)
-	if err != nil || u.User == nil {
-		return ""
+// connPasswordForms returns every form the conn string's password can
+// take in text: as typed, percent-decoded, and percent-encoded. The
+// driver re-serializes the DSN, so a dump can carry the encoded form
+// even when the user typed a plain one.
+func connPasswordForms(connStr string) []string {
+	var out []string
+	add := func(s string) {
+		if s == "" {
+			return
+		}
+		for _, seen := range out {
+			if seen == s {
+				return
+			}
+		}
+		out = append(out, s)
 	}
-	pass, ok := u.User.Password()
-	if !ok {
-		return ""
+	if u, err := url.Parse(connStr); err == nil && u.User != nil {
+		if pass, ok := u.User.Password(); ok {
+			add(pass)
+			add(encodeUserPassword(pass))
+		}
 	}
-	return pass
+	// The raw DSN form: user:pass@tcp(host:3306)/db
+	if pass, ok := saved.Password(connStr); ok {
+		add(pass)
+	}
+	return out
+}
+
+// encodeUserPassword renders a password the way net/url escapes a
+// userinfo password. url.PathEscape will not do: it leaves "@" alone,
+// but the userinfo encoding does not, and the driver serializes the
+// DSN with the userinfo encoding.
+func encodeUserPassword(pass string) string {
+	return (&url.URL{User: url.UserPassword("u", pass)}).String()[len("u:"):]
 }
 
 // writeQueryDumpFile writes the dump outside the working directory at

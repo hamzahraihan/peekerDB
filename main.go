@@ -85,7 +85,11 @@ or a saved NAME. Env DATABASE_URL fills conn when no argument is given.
 	store, err := saved.Load()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "peekerdb: warning: saved connections unavailable:", err)
-		store = saved.New()
+		if store == nil {
+			store = saved.New()
+		}
+		// A store that failed to load keeps refusing to save, so the
+		// file it could not read is not silently overwritten.
 	}
 
 	if *connsF {
