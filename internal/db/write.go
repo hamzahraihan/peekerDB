@@ -91,41 +91,6 @@ func IsRowReturning(sql string) bool {
 	}
 }
 
-// IsWriteStatement reports whether sql would modify data or schema
-// (INSERT/UPDATE/DELETE/MERGE/REPLACE/DDL), including statements with
-// a RETURNING clause or mutating CTEs. Callers gate read-only mode on this.
-func IsWriteStatement(sql string) bool {
-	s := stripLeadingComments(sql)
-	if s == "" {
-		return false
-	}
-	toks := splitSQLWords(s)
-	if len(toks) == 0 {
-		return false
-	}
-	first := strings.ToUpper(toks[0])
-	switch first {
-	case "INSERT", "UPDATE", "DELETE", "MERGE", "REPLACE",
-		"CREATE", "DROP", "ALTER", "TRUNCATE", "GRANT", "REVOKE":
-		return true
-	case "WITH":
-		// Detect mutating CTEs: WITH ... INSERT/UPDATE/DELETE
-		for i, t := range toks {
-			w := strings.ToUpper(t)
-			if (w == "DELETE" && i+1 < len(toks) && strings.ToUpper(toks[i+1]) == "FROM") ||
-				(w == "INSERT" && i+1 < len(toks) && strings.ToUpper(toks[i+1]) == "INTO") ||
-				(w == "UPDATE") {
-				return true
-			}
-		}
-		return false
-	case "SELECT", "VALUES", "TABLE", "EXPLAIN":
-		return false
-	default:
-		return true
-	}
-}
-
 // hasReturningClause reports whether sql carries a standalone RETURNING
 // keyword (INSERT/UPDATE/DELETE ... RETURNING). Matching is
 // case-insensitive on word boundaries after stripping leading comments.

@@ -60,6 +60,28 @@ func TestReadOnlyAllowsSelectRun(t *testing.T) {
 	}
 }
 
+// A selection can cover several statements, and every statement it
+// covers runs. Read-only mode must block a selection that reads first
+// and writes second.
+func TestReadOnlyBlocksMultiStatementSelection(t *testing.T) {
+	m := queryTabModel()
+	m.tab, m.queryFocus, m.focusDetail = 3, 0, true
+	m.readOnly = true
+	const script = "SELECT 1; DELETE FROM users"
+	m.editor.SetText(script)
+	m.editor.selActive = true
+	m.editor.selAnchor, m.editor.selAnchorCol = 0, 0
+	m.editor.CurLine, m.editor.CurCol = 0, len(script)
+	u, _ := m.Update(testKey("ctrl+r"))
+	m = u.(Model)
+	if m.loading {
+		t.Fatal("read-only must block a multi-statement selection that writes")
+	}
+	if m.status != "read-only: writes blocked" {
+		t.Fatalf("expected writes blocked status, got %q", m.status)
+	}
+}
+
 func TestReadOnlyBlocksCellEdit(t *testing.T) {
 	m := queryTabModel()
 	m.tab, m.focusDetail = 2, true
