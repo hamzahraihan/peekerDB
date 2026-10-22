@@ -488,8 +488,15 @@ func (d *DB) ExecStmt(ctx context.Context, sql string) (int64, error) {
 // alive, so every later statement runs on it rather than on a fresh
 // connection that never saw the setting.
 //
+// A read-only session can still be escaped from the server side —
+// Postgres and MySQL accept "START TRANSACTION READ WRITE", and every
+// driver can have its setting turned off again. IsWriteStatement
+// refuses those, so the client-side gate is what actually holds.
+//
 // SQL Server has no session-level read-only mode, so there the guarantee
-// is the client-side check alone.
+// is the client-side check alone. A restricted login (db_datareader
+// without db_datareader's write rights) is the only server-side
+// guarantee on that engine.
 func (d *DB) ApplyReadOnly(ctx context.Context) error {
 	if d == nil || d.SQL == nil {
 		return nil

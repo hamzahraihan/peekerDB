@@ -16,6 +16,11 @@ import "strings"
 // The whole script is classified, not just its first statement:
 // RunUserQuery executes every statement it is handed, so a script whose
 // first statement is a SELECT still writes.
+//
+// Anything the gate does not recognise is treated as a write. That is
+// what refuses the statements that would escape a read-only session —
+// "START TRANSACTION READ WRITE", "SET transaction_read_only = 0",
+// "PRAGMA query_only = OFF" — which the servers would otherwise accept.
 func IsWriteStatement(sql string) bool {
 	for _, stmt := range SplitStatements(sql) {
 		if isWriteStatementOne(stmt) {

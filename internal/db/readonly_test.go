@@ -90,6 +90,27 @@ func TestIsWriteStatementSeesThroughMutatingCTE(t *testing.T) {
 	}
 }
 
+// A read-only session can be escaped from the server side: Postgres and
+// MySQL let a transaction be started read-write explicitly, and every
+// driver can have its read-only setting turned off again. The client
+// gate must refuse all of them, whatever the session allows.
+func TestIsWriteStatementBlocksReadOnlyEscapeHatches(t *testing.T) {
+	for _, sql := range []string{
+		"START TRANSACTION READ WRITE",
+		"START TRANSACTION READ WRITE; INSERT INTO t VALUES (1)",
+		"BEGIN READ WRITE",
+		"SET default_transaction_read_only = off",
+		"SET transaction_read_only = 0",
+		"SET tx_read_only = 0",
+		"SET readonly = 0",
+		"PRAGMA query_only = OFF",
+	} {
+		if !IsWriteStatement(sql) {
+			t.Errorf("IsWriteStatement(%q) = false, want true: it would escape the read-only session", sql)
+		}
+	}
+}
+
 func TestIsRowReturning(t *testing.T) {
 	for sql, want := range map[string]bool{
 		"SELECT * FROM t":                         true,
