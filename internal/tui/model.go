@@ -57,6 +57,9 @@ type Model struct {
 	sqlFileMode  string // "open" or "save" while sqlFiling
 	lastSQLPath  string // prefill for the next open/save prompt
 	sqlConfirmPath string // pending open path awaiting y/n on a dirty buffer
+	// exportConfirmPath is a pending export target awaiting y/n before
+	// an existing file is replaced.
+	exportConfirmPath string
 	focusDetail bool // browse split: sidebar list vs detail pane
 	sidebarW    int  // sidebar width in cells, set on resize
 	tab         int  // 0 schema, 1 indexes, 2 rows

@@ -63,3 +63,35 @@ func TestSQLOpenTooLargeKeepsBuffer(t *testing.T) {
 		t.Fatal("oversize open must report error")
 	}
 }
+
+// The size is checked before the read: a multi-GB file must never be
+// loaded into memory just to be rejected afterwards.
+func TestSQLOpenTooLargeDoesNotReadTheFile(t *testing.T) {
+	dir := t.TempDir()
+	path := dir + "/big.sql"
+	big := make([]byte, maxSQLFileBytes+1)
+	if err := os.WriteFile(path, big, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	old := readSQLFile
+	read := false
+	readSQLFile = func(name string) ([]byte, error) {
+		read = true
+		return old(name)
+	}
+	defer func() { readSQLFile = old }()
+
+	m := queryTabModel()
+	m.tab = 3
+	m.editor.SetText("")
+	m.sqlFiling, m.sqlFileMode = true, "open"
+	m.sqlFileInput.SetValue(path)
+	m.confirmSQLFile()
+
+	if read {
+		t.Fatal("an oversize file must be rejected without reading it")
+	}
+	if m.err == "" {
+		t.Fatal("oversize open must report error")
+	}
+}

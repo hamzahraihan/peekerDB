@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -26,6 +27,20 @@ const (
 	FormatJSON Format = "json"
 	FormatMD   Format = "md"
 	FormatSQL  Format = "sql"
+)
+
+// Dialect names the SQL dialect a .sql dump targets. It decides how a
+// string literal is escaped: MySQL, MariaDB and ClickHouse treat a
+// backslash inside a literal as an escape character, so a backslash
+// there must be doubled; Postgres, SQLite and SQL Server take it
+// literally.
+type Dialect int
+
+const (
+	// DialectStandard is Postgres, SQLite and SQL Server.
+	DialectStandard Dialect = iota
+	// DialectBackslash is MySQL, MariaDB and ClickHouse.
+	DialectBackslash
 )
 
 // FormatFromExt maps a file path to a format. The extension is matched
@@ -50,6 +65,13 @@ func FormatFromExt(path string) (Format, error) {
 // number of data rows written (the header is not counted). A nil value is
 // SQL NULL and becomes an empty field, except in JSON where it stays null.
 func (f Format) Write(w io.Writer, cols []string, raw [][]any) (int, error) {
+	return f.WriteTo(w, cols, raw, DialectStandard)
+}
+
+// WriteTo emits cols and raw in the receiver's format, targeting the
+// given SQL dialect. The dialect only matters for the .sql format,
+// where it decides how a string literal is escaped.
+func (f Format) WriteTo(w io.Writer, cols []string, raw [][]any, d Dialect) (int, error) {
 	switch f {
 	case FormatCSV:
 		return f.writeSeparated(w, cols, raw, ',')
@@ -60,7 +82,7 @@ func (f Format) Write(w io.Writer, cols []string, raw [][]any) (int, error) {
 	case FormatMD:
 		return f.writeMarkdown(w, cols, raw)
 	case FormatSQL:
-		return f.writeSQL(w, cols, raw)
+		return f.writeSQL(w, cols, raw, d)
 	}
 	return 0, fmt.Errorf("unknown export format %q", f)
 }
@@ -68,13 +90,17 @@ func (f Format) Write(w io.Writer, cols []string, raw [][]any) (int, error) {
 func (f Format) writeSeparated(w io.Writer, cols []string, raw [][]any, comma rune) (int, error) {
 	cw := csv.NewWriter(w)
 	cw.Comma = comma
-	if err := cw.Write(cols); err != nil {
+	header := make([]string, len(cols))
+	for i, c := range cols {
+		header[i] = spreadsheetSafe(c)
+	}
+	if err := cw.Write(header); err != nil {
 		return 0, err
 	}
 	for _, row := range raw {
 		rec := make([]string, len(cols))
 		for i := range cols {
-			rec[i] = scalarString(cell(row, i))
+			rec[i] = spreadsheetSafe(scalarString(cell(row, i)))
 		}
 		if err := cw.Write(rec); err != nil {
 			return 0, err
@@ -82,6 +108,28 @@ func (f Format) writeSeparated(w io.Writer, cols []string, raw [][]any, comma ru
 	}
 	cw.Flush()
 	return len(raw), cw.Error()
+}
+
+// spreadsheetSafe neutralizes a cell that a spreadsheet would evaluate
+// as a formula. Excel, LibreOffice and Google Sheets evaluate a cell
+// starting with "=", "+", "-" or "@" — even a quoted one — so the value
+// is prefixed with an apostrophe, which they read as text.
+//
+// A value that is a plain number is left alone: "-5" is data, not a
+// formula, and prefixing it would turn a number into text.
+func spreadsheetSafe(s string) string {
+	if s == "" {
+		return s
+	}
+	switch s[0] {
+	case '=', '+', '-', '@', '\t', '\r':
+	default:
+		return s
+	}
+	if _, err := strconv.ParseFloat(s, 64); err == nil {
+		return s
+	}
+	return "'" + s
 }
 
 func (f Format) writeJSON(w io.Writer, cols []string, raw [][]any) (int, error) {
@@ -190,7 +238,7 @@ func escapeMD(cells []string) []string {
 	}
 	return out
 }
-func (f Format) writeSQL(w io.Writer, cols []string, raw [][]any) (int, error) {
+func (f Format) writeSQL(w io.Writer, cols []string, raw [][]any, d Dialect) (int, error) {
 	if len(cols) == 0 || len(raw) == 0 {
 		return 0, nil
 	}
@@ -211,7 +259,7 @@ func (f Format) writeSQL(w io.Writer, cols []string, raw [][]any) (int, error) {
 				valList.WriteString(", ")
 			}
 			v := cell(row, i)
-			valList.WriteString(sqlLiteral(v))
+			valList.WriteString(sqlLiteral(v, d))
 		}
 		if _, err := fmt.Fprintf(bw, "INSERT INTO %s (%s) VALUES (%s);\n", tableName, colList.String(), valList.String()); err != nil {
 			return 0, err
@@ -223,7 +271,7 @@ func (f Format) writeSQL(w io.Writer, cols []string, raw [][]any) (int, error) {
 	return len(raw), nil
 }
 
-func sqlLiteral(v any) string {
+func sqlLiteral(v any, d Dialect) string {
 	if v == nil {
 		return "NULL"
 	}
@@ -239,11 +287,21 @@ func sqlLiteral(v any) string {
 		return fmt.Sprintf("%v", val)
 	case []byte:
 		if isText(val) {
-			return "'" + strings.ReplaceAll(string(val), "'", "''") + "'"
+			return quoteSQLString(string(val), d)
 		}
 		return fmt.Sprintf("X'%X'", val)
 	default:
-		s := fmt.Sprintf("%v", val)
-		return "'" + strings.ReplaceAll(s, "'", "''") + "'"
+		return quoteSQLString(fmt.Sprintf("%v", val), d)
 	}
+}
+
+// quoteSQLString quotes a text value as a SQL literal. The single quote
+// is always doubled. A backslash is doubled only in the dialects that
+// treat it as an escape character, so a value can never end the literal
+// and start a new statement.
+func quoteSQLString(s string, d Dialect) string {
+	if d == DialectBackslash {
+		s = strings.ReplaceAll(s, "\\", "\\\\")
+	}
+	return "'" + strings.ReplaceAll(s, "'", "''") + "'"
 }

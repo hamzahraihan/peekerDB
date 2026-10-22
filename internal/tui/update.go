@@ -975,6 +975,21 @@ func (m Model) detailKey(msg tea.KeyPressMsg, key string) (tea.Model, tea.Cmd) {
 		m.cellInput, cmd = m.cellInput.Update(msg)
 		return m, cmd
 	}
+	// A pending export-overwrite confirm owns every key until y/n/esc.
+	if m.exportConfirmPath != "" {
+		switch key {
+		case "y", "Y":
+			path := m.exportConfirmPath
+			m.exportConfirmPath = ""
+			m.confirmExportOverwrite(path)
+			return m, nil
+		case "n", "N", "esc":
+			m.exportConfirmPath = ""
+			m.status = "export cancelled"
+			return m, nil
+		}
+		return m, nil
+	}
 	// The export prompt is modal inside the detail pane: every key
 	// belongs to the path input until enter or esc.
 	if m.exporting {

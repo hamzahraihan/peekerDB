@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -162,5 +163,98 @@ func TestExportFromQueryResults(t *testing.T) {
 	}
 	if !strings.Contains(string(data), `"n": 7`) {
 		t.Fatalf("query export must carry the raw value:\n%s", data)
+	}
+}
+
+// An export holds database rows, which can be sensitive, so the file
+// must not be readable by anyone but its owner.
+func TestExportFileIsPrivate(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("file permission bits are not enforced on Windows")
+	}
+	m := exportModel(t)
+	path := filepath.Join(t.TempDir(), "out.csv")
+
+	u, _ := m.Update(testKey("E"))
+	m = u.(Model)
+	m.exportInput.SetValue(path)
+	u, _ = m.Update(testKey("enter"))
+	m = u.(Model)
+	if m.err != "" {
+		t.Fatalf("export failed: %s", m.err)
+	}
+	st, err := os.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Mode().Perm()&0o077 != 0 {
+		t.Fatalf("the export must not be group or world readable: %v", st.Mode().Perm())
+	}
+}
+
+// An existing file must not be truncated without asking: the default
+// export path is predictable, so a file that is already there may be
+// one the user cares about.
+func TestExportAsksBeforeOverwriting(t *testing.T) {
+	m := exportModel(t)
+	path := filepath.Join(t.TempDir(), "out.csv")
+	if err := os.WriteFile(path, []byte("important"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	u, _ := m.Update(testKey("E"))
+	m = u.(Model)
+	m.exportInput.SetValue(path)
+	u, _ = m.Update(testKey("enter"))
+	m = u.(Model)
+
+	got, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) != "important" {
+		t.Fatalf("the file must not be overwritten yet: %q", got)
+	}
+	if m.exportConfirmPath == "" {
+		t.Fatal("the export must ask before overwriting")
+	}
+
+	// "n" leaves the file alone.
+	u, _ = m.Update(testKey("n"))
+	m = u.(Model)
+	got, _ = os.ReadFile(path)
+	if string(got) != "important" {
+		t.Fatalf("cancelling must leave the file alone: %q", got)
+	}
+}
+
+// Answering "y" to the overwrite prompt replaces the file.
+func TestExportOverwritesWhenConfirmed(t *testing.T) {
+	m := exportModel(t)
+	path := filepath.Join(t.TempDir(), "out.csv")
+	if err := os.WriteFile(path, []byte("important"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	u, _ := m.Update(testKey("E"))
+	m = u.(Model)
+	m.exportInput.SetValue(path)
+	u, _ = m.Update(testKey("enter"))
+	m = u.(Model)
+	u, _ = m.Update(testKey("y"))
+	m = u.(Model)
+
+	if m.err != "" {
+		t.Fatalf("export failed: %s", m.err)
+	}
+	got, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(got) == "important" {
+		t.Fatalf("y must overwrite the file: %q", got)
+	}
+	if !strings.Contains(string(got), "id") {
+		t.Fatalf("the export must carry the rows: %q", got)
 	}
 }
