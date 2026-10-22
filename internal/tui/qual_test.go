@@ -6,7 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	dbpkg "peekerdb/internal/db"
+	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
 )
 
 func TestCandidatesAmbiguous(t *testing.T) {

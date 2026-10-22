@@ -8,7 +8,7 @@ package tui
 import (
 	"strings"
 
-	"peekerdb/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/saved"
 )
 
 // loadSessionFunc is a seam for tests, which must never read the

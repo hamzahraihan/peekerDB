@@ -8,7 +8,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 	"github.com/charmbracelet/x/ansi"
-	dbpkg "peekerdb/internal/db"
+	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
 )
 
 // erRect is a box origin + size in canvas cells.

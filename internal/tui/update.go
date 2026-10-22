@@ -13,7 +13,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	dbpkg "peekerdb/internal/db"
+	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

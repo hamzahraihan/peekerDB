@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	dbpkg "peekerdb/internal/db"
+	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
 )
 
 func TestCellModalOpenAndDismiss(t *testing.T) {

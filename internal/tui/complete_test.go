@@ -12,7 +12,7 @@ import (
 	"github.com/charmbracelet/colorprofile"
 	"github.com/charmbracelet/x/ansi"
 
-	"peekerdb/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/saved"
 )
 
 // testKey builds a v2 KeyPressMsg whose String() yields name: single

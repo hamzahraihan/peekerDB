@@ -23,9 +23,9 @@ import (
 	"strings"
 	"time"
 
-	dbpkg "peekerdb/internal/db"
-	"peekerdb/internal/saved"
-	"peekerdb/internal/tui"
+	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
+	"github.com/hamzahraihan/peekerDB/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/tui"
 )
 
 // appVersion identifies the build; bump on user-visible changes so stale

@@ -11,7 +11,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"peekerdb/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/saved"
 )
 
 // Run starts the fullscreen TUI. An empty connStr opens the saved

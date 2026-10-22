@@ -12,8 +12,8 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	dbpkg "peekerdb/internal/db"
-	"peekerdb/internal/saved"
+	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
+	"github.com/hamzahraihan/peekerDB/internal/saved"
 )
 
 type screen int

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"peekerdb/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/saved"
 )
 
 var errTestClipboard = errors.New("no clipboard")

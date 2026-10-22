@@ -11,7 +11,7 @@ import (
 
 	"github.com/atotto/clipboard"
 
-	"peekerdb/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/saved"
 )
 
 // Copy-query support: the TUI captures the mouse, so terminal text

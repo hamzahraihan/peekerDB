@@ -1,4 +1,4 @@
-module peekerdb
+module github.com/hamzahraihan/peekerDB
 
 go 1.26.0
 

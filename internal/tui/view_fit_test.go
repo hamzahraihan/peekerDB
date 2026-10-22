@@ -6,7 +6,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	dbpkg "peekerdb/internal/db"
+	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
 )
 
 // A wrapped line pushes every row below it down, silently desyncing mouse

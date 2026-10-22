@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	dbpkg "peekerdb/internal/db"
+	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
 )
 
 func cellEditModel(t *testing.T, ddl string) Model {

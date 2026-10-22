@@ -6,7 +6,7 @@ import (
 
 	"charm.land/lipgloss/v2"
 
-	dbpkg "peekerdb/internal/db"
+	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
 )
 
 // Query buffers: one editor + results per buffer so a new query never

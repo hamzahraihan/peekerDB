@@ -11,7 +11,7 @@ import (
 
 	"charm.land/bubbles/v2/textinput"
 
-	"peekerdb/internal/export"
+	"github.com/hamzahraihan/peekerDB/internal/export"
 )
 
 // exportTarget is the result set the export overlay applies to.
