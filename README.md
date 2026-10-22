@@ -55,7 +55,9 @@ schema is an error naming the candidates.
 
 `--read-only` blocks a statement that would modify data or schema, including a
 write hidden in a multi-statement script, in an `EXPLAIN ANALYZE`, or behind a
-CTE. Where the server supports it, the session is also set read-only.
+CTE. The session is also set read-only where the server supports it — Postgres,
+MySQL, MariaDB, ClickHouse and SQLite. SQL Server has no session-level
+read-only mode, so there the check above is the only guard.
 
 ## TUI keys (`?` shows all in-app)
 

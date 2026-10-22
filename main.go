@@ -160,7 +160,9 @@ or a saved NAME. Env DATABASE_URL fills conn when no argument is given.
 		fatal(fmt.Errorf("connect failed: %w", err))
 	}
 	if *roF {
-		_ = db.ApplyReadOnly(ctx)
+		if err := db.ApplyReadOnly(ctx); err != nil {
+			fatal(fmt.Errorf("read-only mode could not be set on the session: %w", err))
+		}
 	}
 
 	switch {

@@ -478,21 +478,38 @@ func (d *DB) ExecStmt(ctx context.Context, sql string) (int64, error) {
 	}
 	return n, nil
 }
-// ApplyReadOnly configures the connection at the session/engine level to refuse
-// writes even if client-side validation is bypassed.
+// ApplyReadOnly configures the connection at the session/engine level to
+// refuse writes even if client-side validation is bypassed.
+//
+// The setting is session-scoped, so it holds only for the connection it
+// was applied to. The pool is pinned to that one connection and kept
+// alive, so every later statement runs on it rather than on a fresh
+// connection that never saw the setting.
+//
+// SQL Server has no session-level read-only mode, so there the guarantee
+// is the client-side check alone.
 func (d *DB) ApplyReadOnly(ctx context.Context) error {
 	if d == nil || d.SQL == nil {
 		return nil
 	}
+	d.SQL.SetMaxOpenConns(1)
+	d.SQL.SetMaxIdleConns(1)
+	d.SQL.SetConnMaxLifetime(0)
 	switch d.Driver {
 	case SQLite:
 		_, err := d.SQL.ExecContext(ctx, "PRAGMA query_only = ON")
 		return err
 	case Postgres:
+		// SET SESSION CHARACTERISTICS sets default_transaction_read_only,
+		// which every later transaction inherits, autocommit ones too.
 		_, err := d.SQL.ExecContext(ctx, "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY")
 		return err
 	case MySQL, MariaDB:
 		_, err := d.SQL.ExecContext(ctx, "SET SESSION TRANSACTION READ ONLY")
+		return err
+	case ClickHouse:
+		// readonly=1 refuses INSERT, DELETE and ALTER for the session.
+		_, err := d.SQL.ExecContext(ctx, "SET readonly = 1")
 		return err
 	}
 	return nil

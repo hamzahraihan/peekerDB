@@ -51,7 +51,12 @@ func (m *Model) openAndLoad(connStr string) tea.Cmd {
 			return connectMsg{err: fmt.Errorf("connect failed: %w", err)}
 		}
 		if m.readOnly {
-			_ = db.ApplyReadOnly(ctx)
+			if err := db.ApplyReadOnly(ctx); err != nil {
+				// The client-side check still blocks writes, but say so
+				// rather than pretend the session is read-only.
+				_ = db.Close()
+				return connectMsg{err: fmt.Errorf("read-only mode could not be set on the session: %w", err)}
+			}
 		}
 		return connectMsg{db: db}
 	}
