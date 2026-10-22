@@ -33,7 +33,7 @@ import (
 // binaries (e.g. a project-local peekerdb.exe shadowing the install) are
 // diagnosable via --version. Overridden at release time via
 // -ldflags "-X main.appVersion={{.Version}}"; default is dev fallback.
-var appVersion = "0.6.0"
+var appVersion = "0.6.1"
 
 func main() {
 	var (

@@ -32,5 +32,18 @@ jobs:
             git diff --stat
             exit 1
           fi
+      # Every target the release ships must compile. The matrix runners
+      # only cover the platform they run on, so a file behind a
+      # //go:build tag for another platform is never compiled here —
+      # and a release would fail on it.
+      - name: Cross-compile every release target
+        if: runner.os == 'Linux'
+        run: |
+          for os in linux darwin windows; do
+            for arch in amd64 arm64; do
+              echo "building $os/$arch"
+              GOOS=$os GOARCH=$arch go build ./...
+            done
+          done
       - run: go vet ./...
       - run: go test ./...

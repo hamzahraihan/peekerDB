@@ -6,6 +6,6 @@ func encryptPayloadPlain(plaintext []byte) ([]byte, error) {
 	return plaintext, nil
 }
 
-func decryptPayload(ciphertext []byte) ([]byte, error) {
+func decryptPayloadPlain(ciphertext []byte) ([]byte, error) {
 	return ciphertext, nil
 }
