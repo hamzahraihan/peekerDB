@@ -16,6 +16,10 @@ go build -o peekerdb .
 
 Requires Go 1.26+ for source builds.
 
+`go install` names the binary after the repository, so it installs as
+`peekerDB`; the release archives contain `peekerdb`. On a case-sensitive
+filesystem the two are different names.
+
 ## Quickstart
 
 ```sh
