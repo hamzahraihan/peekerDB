@@ -11,28 +11,26 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+The exact command or the exact keys you pressed:
+1. `peekerdb <conn> --rows users`
+2. ...
+3. See error
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Environment**
+- `peekerdb --version` output:
+- OS and shell: [e.g. macOS 15, zsh]
+- Database engine and server version: [e.g. Postgres 16, MySQL 8.4, SQLite 3.47]
+- Connection scheme: [e.g. `postgres://`, `mysql://`, `./app.db`]
+- Were you using `--read-only`? [yes/no]
+- Were you in the TUI or the one-shot CLI? [TUI/CLI]
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**Error output**
+The full text of the error, if there is one. Please paste it as text rather
+than a screenshot — the error may carry a connection string, so replace the
+password with `***`.
 
 **Additional context**
 Add any other context about the problem here.

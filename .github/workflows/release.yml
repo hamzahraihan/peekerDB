@@ -7,6 +7,11 @@ on:
 permissions:
   contents: write
 
+# A re-pushed tag must not publish twice.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -18,10 +23,13 @@ jobs:
         with:
           go-version: "1.27"
           cache: true
+      # A tag on an untested commit must not ship.
+      - run: go vet ./...
+      - run: go test ./...
       - uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
-          version: latest
+          version: "~> v2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

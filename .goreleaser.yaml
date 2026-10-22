@@ -10,9 +10,32 @@ builds:
 
 archives:
   - name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
+    formats: ["tar.gz"]
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ["zip"]
 
 checksum:
   name_template: "checksums.txt"
+
+changelog:
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+release:
+  prerelease: auto
+  header: |
+    ## peekerdb {{ .Version }}
+
+    Peek at Postgres, MySQL, MariaDB, SQL Server, ClickHouse, Redis, MongoDB and SQLite from the terminal.
+
+    Download the archive for your platform and verify it against `checksums.txt`:
+
+    ```
+    sha256sum -c checksums.txt
+    ```
+  footer: |
+    Install with `go install github.com/hamzahraihan/peekerDB@latest`.
