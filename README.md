@@ -19,17 +19,18 @@ Requires Go 1.26+ for source builds.
 ## Quickstart
 
 ```sh
-peekerdb ./ecommerce.db
 peekerdb "postgres://user:pass@localhost:5432/db" --list
 DATABASE_URL=postgres://user:pass@localhost:5432/db peekerdb --list
-peekerdb ./ecommerce.db --rows users --limit 20 --offset 0
-peekerdb ./ecommerce.db --schema users
-peekerdb ./ecommerce.db --query "SELECT 1"
+peekerdb ./app.db --rows users --limit 20 --offset 0
+peekerdb ./app.db --schema users
+peekerdb ./app.db --query "SELECT 1"
 ```
 
 Conn forms: `postgres://...` | `mysql://...` | `mariadb://...` | `sqlserver://...` | `clickhouse://...` | `redis://...` | `mongodb://...` | `./app.db` | `:memory:` | `sqlite://path`.
 A bare saved NAME resolves to it. `DATABASE_URL` fills conn when no arg is given.
-SQLite paths must exist; nothing is auto-created.
+SQLite paths must exist; nothing is auto-created. To try it locally, create a
+file first — `sqlite3 app.db "create table users(id integer primary key, name text)"` —
+or point `peekerdb` at any existing SQLite database.
 
 ## CLI flags
 

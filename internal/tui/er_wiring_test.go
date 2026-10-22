@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -9,15 +11,58 @@ import (
 	"github.com/hamzahraihan/peekerDB/internal/db"
 )
 
+// erFixtureDDL is the schema the ER diagram needs: a parent table and a
+// child table joined by a foreign key, so the diagram has a real link to
+// draw. It is created per test run, so the test never depends on a
+// database file in the working tree and can never be skipped.
+var erFixtureDDL = []string{
+	`CREATE TABLE categories (
+		id          INTEGER PRIMARY KEY AUTOINCREMENT,
+		name        TEXT NOT NULL UNIQUE,
+		description TEXT NOT NULL DEFAULT '',
+		parent_id   INTEGER REFERENCES categories (id)
+	)`,
+	`CREATE TABLE products (
+		id          INTEGER PRIMARY KEY AUTOINCREMENT,
+		category_id INTEGER NOT NULL REFERENCES categories (id) ON DELETE RESTRICT,
+		name        TEXT NOT NULL,
+		description TEXT NOT NULL DEFAULT ''
+	)`,
+	`CREATE INDEX idx_products_category ON products (category_id)`,
+	`INSERT INTO categories (id, name) VALUES (1, 'tools'), (2, 'garden')`,
+	`INSERT INTO products (id, category_id, name) VALUES (1, 1, 'hammer'), (2, 1, 'spade'), (3, 2, 'trowel')`,
+}
+
+// newERFixtureDB opens a throwaway SQLite database holding the ER
+// fixture schema. The file lives in t.TempDir() so the test is
+// self-contained: it runs in CI, in a fresh clone, and on any machine.
+func newERFixtureDB(t *testing.T) *db.DB {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "er.db")
+	// A zero-byte file is a valid empty SQLite database, and db.Open
+	// refuses to create the file itself — it must exist first.
+	if err := os.WriteFile(path, nil, 0o600); err != nil {
+		t.Fatalf("create fixture file: %v", err)
+	}
+	d, err := db.Open(path)
+	if err != nil {
+		t.Fatalf("open fixture: %v", err)
+	}
+	for _, stmt := range erFixtureDDL {
+		if _, err := d.SQL.Exec(stmt); err != nil {
+			d.Close()
+			t.Fatalf("fixture DDL failed: %v\n%s", err, stmt)
+		}
+	}
+	return d
+}
+
 // Entering the ER tab issues two commands — the per-table FK load and the
 // full-schema load. They must share one cancellable context: a second
 // context cancels the first, and the legacy view would keep saying
 // "(no foreign keys)" forever.
 func TestEnteringERTabLoadsRealForeignKeys(t *testing.T) {
-	d, err := db.Open("../../ecommerce.db")
-	if err != nil {
-		t.Skipf("fixture unavailable: %v", err)
-	}
+	d := newERFixtureDB(t)
 	defer d.Close()
 
 	m := browseModel(t)
