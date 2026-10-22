@@ -14,6 +14,7 @@ import (
 
 	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
 	"github.com/hamzahraihan/peekerDB/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 )
 
 type screen int
@@ -318,7 +319,7 @@ func (m *Model) refreshConns() {
 	profiles := m.store.List()
 	items := make([]list.Item, len(profiles))
 	for i, p := range profiles {
-		items[i] = connItem{name: p.Name, masked: saved.Mask(p.Conn), icon: connIcon}
+		items[i] = connItem{name: p.Name, masked: secret.Mask(p.Conn), icon: connIcon}
 	}
 	m.conns.SetItems(items)
 }

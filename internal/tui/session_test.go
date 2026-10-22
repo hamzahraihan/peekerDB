@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hamzahraihan/peekerDB/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 )
 
 func sessionStore(t *testing.T, name, conn string) *saved.Store {
@@ -83,7 +84,7 @@ func TestSessionRoundTripsThroughModel(t *testing.T) {
 // silently reconnected: the picker opens instead.
 func TestSessionSkipsStaleProfile(t *testing.T) {
 	conn := "postgres://u:p@localhost:5432/db"
-	sess := &saved.Session{ConnProfile: "prod", ConnMasked: saved.Mask(conn)}
+	sess := &saved.Session{ConnProfile: "prod", ConnMasked: secret.Mask(conn)}
 
 	edited := sessionStore(t, "prod", "postgres://u:p@localhost:5433/other")
 	if got := (&Model{store: edited}).restoreConn(sess); got != "" {
@@ -102,7 +103,7 @@ func TestSessionSkipsStaleProfile(t *testing.T) {
 // An explicit connection argument always wins over the saved session.
 func TestSessionYieldsToCLIConn(t *testing.T) {
 	conn := "./explicit.db"
-	sess := &saved.Session{ConnProfile: "prod", ConnMasked: saved.Mask("postgres://u:p@h/db")}
+	sess := &saved.Session{ConnProfile: "prod", ConnMasked: secret.Mask("postgres://u:p@h/db")}
 	m := Model{connStr: conn, store: sessionStore(t, "prod", "postgres://u:p@h/db")}
 	m.applySession(sess)
 	if m.connStr != conn {

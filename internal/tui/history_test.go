@@ -5,6 +5,7 @@ import (
 
 	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
 	"github.com/hamzahraihan/peekerDB/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 )
 
 func historyModel(t *testing.T) Model {
@@ -20,8 +21,8 @@ func historyModel(t *testing.T) Model {
 func TestHistoryRecallWalksAndRestores(t *testing.T) {
 	m := historyModel(t)
 	m.editor.SetText("select live")
-	m.history.Add("select older", saved.Mask(m.connStr))
-	m.history.Add("select newest", saved.Mask(m.connStr))
+	m.history.Add("select older", secret.Mask(m.connStr))
+	m.history.Add("select newest", secret.Mask(m.connStr))
 	m.history.Add("select other", "some-other-conn")
 
 	m.historyPrev()
@@ -64,7 +65,7 @@ func TestHistoryRecallIsPerConnection(t *testing.T) {
 // instead of a stale index.
 func TestHistoryEditResetsRecall(t *testing.T) {
 	m := historyModel(t)
-	m.history.Add("select one", saved.Mask(m.connStr))
+	m.history.Add("select one", secret.Mask(m.connStr))
 	m.historyPrev()
 	if m.histIdx != 0 {
 		t.Fatalf("expected recall mode, histIdx=%d", m.histIdx)
@@ -96,14 +97,14 @@ func TestQueryDoneRecordsHistory(t *testing.T) {
 	if msg, ok := cmd().(historySavedMsg); !ok || msg.err != nil {
 		t.Fatalf("history write must succeed, got %#v", cmd())
 	}
-	if got := m.history.Recent(saved.Mask(m.connStr), 1); len(got) != 1 || got[0].SQL != "select 1" {
+	if got := m.history.Recent(secret.Mask(m.connStr), 1); len(got) != 1 || got[0].SQL != "select 1" {
 		t.Fatalf("the query must be recorded, got %+v", got)
 	}
 
 	m.qbufs[m.qcur].seq = 2
 	u, _ = m.Update(queryDoneMsg{sql: "select bad", seq: 2, conn: m.connSeq, qbufID: qid, affected: -1, err: errTestCount})
 	m = u.(Model)
-	if got := m.history.Recent(saved.Mask(m.connStr), 1); len(got) != 1 || got[0].SQL != "select bad" {
+	if got := m.history.Recent(secret.Mask(m.connStr), 1); len(got) != 1 || got[0].SQL != "select bad" {
 		t.Fatalf("a failed query must still be recorded, got %+v", got)
 	}
 }

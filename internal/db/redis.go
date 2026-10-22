@@ -20,7 +20,7 @@ type redisEngine struct {
 func openRedis(raw string) (Engine, string, error) {
 	opt, err := redis.ParseURL(raw)
 	if err != nil {
-		return nil, "", fmt.Errorf("redis connection error: %w", err)
+		return nil, "", fmt.Errorf("redis connection error: %w", scrubConnError(err, raw))
 	}
 	rdb := redis.NewClient(opt)
 	name := fmt.Sprintf("db%d", opt.DB)

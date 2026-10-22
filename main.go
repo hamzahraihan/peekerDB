@@ -26,6 +26,7 @@ import (
 	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
 	"github.com/hamzahraihan/peekerDB/internal/saved"
 	"github.com/hamzahraihan/peekerDB/internal/tui"
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 )
 
 // appVersion identifies the build; bump on user-visible changes so stale
@@ -94,7 +95,7 @@ or a saved NAME. Env DATABASE_URL fills conn when no argument is given.
 
 	if *connsF {
 		for _, p := range store.List() {
-			fmt.Printf("%s\t%s\n", p.Name, saved.Mask(p.Conn))
+			fmt.Printf("%s\t%s\n", p.Name, secret.Mask(p.Conn))
 		}
 		return
 	}

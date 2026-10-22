@@ -2,6 +2,7 @@ package saved
 
 import (
 	"encoding/json"
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 	"os"
 	"path/filepath"
 	"strings"
@@ -68,7 +69,7 @@ func TestHistoryRecentIsPerConnection(t *testing.T) {
 // the file must be created 0600 like the other stores.
 func TestHistorySaveKeepsConnMasked(t *testing.T) {
 	h := tempHistory(t)
-	h.Add("select 1", Mask("postgres://u:hunter2@localhost:5432/db"))
+	h.Add("select 1", secret.Mask("postgres://u:hunter2@localhost:5432/db"))
 	if err := h.Save(); err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +80,7 @@ func TestHistorySaveKeepsConnMasked(t *testing.T) {
 	if strings.Contains(string(data), "hunter2") {
 		t.Fatalf("history.json must not hold the password:\n%s", data)
 	}
-	if !strings.Contains(string(data), Mask("postgres://u:hunter2@localhost:5432/db")) {
+	if !strings.Contains(string(data), secret.Mask("postgres://u:hunter2@localhost:5432/db")) {
 		t.Fatalf("history.json should hold the masked conn:\n%s", data)
 	}
 }

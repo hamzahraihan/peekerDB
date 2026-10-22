@@ -3,7 +3,13 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	_ "github.com/ClickHouse/clickhouse-go/v2"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/microsoft/go-mssqldb"
+	_ "modernc.org/sqlite"
 	"net/url"
 	"os"
 	"slices"
@@ -11,11 +17,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	_ "github.com/ClickHouse/clickhouse-go/v2"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/jackc/pgx/v5/stdlib"
-	_ "github.com/microsoft/go-mssqldb"
-	_ "modernc.org/sqlite"
+
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 )
 
 // Driver is the detected database engine.
@@ -51,12 +54,18 @@ type DB struct {
 	Engine  Engine // non-nil for NoSQL backends (Redis, MongoDB)
 }
 
-func redact(raw string) string {
-	if u, err := url.Parse(raw); err == nil && u.User != nil {
-		u.User = url.User(u.User.Username())
-		return u.Redacted()
+// scrubConnError removes the conn string from an error message. A driver
+// error embeds the DSN it was given, password and all, and the error
+// ends up on screen, in the terminal scrollback and in logs.
+func scrubConnError(err error, raw string) error {
+	if err == nil || raw == "" {
+		return err
 	}
-	return raw
+	msg := err.Error()
+	if !strings.Contains(msg, raw) {
+		return err
+	}
+	return errors.New(strings.ReplaceAll(msg, raw, secret.Mask(raw)))
 }
 func configurePool(sqlDB *sql.DB) {
 	if sqlDB != nil {
@@ -177,10 +186,10 @@ func Open(connStr string) (*DB, error) {
 		// Bare path without a sqlite extension (e.g. ./app, /tmp/demo):
 		// open only when the file exists — never auto-create on a typo.
 		if strings.Contains(raw, "://") {
-			return nil, fmt.Errorf("unrecognized connection string %q: want postgres://, mysql://, mariadb://, sqlserver://, clickhouse://, redis://, mongodb://, or a sqlite file path", redact(raw))
+			return nil, fmt.Errorf("unrecognized connection string %q: want postgres://, mysql://, mariadb://, sqlserver://, clickhouse://, redis://, mongodb://, or a sqlite file path", secret.Mask(raw))
 		}
 		if _, err := os.Stat(raw); err != nil {
-			return nil, fmt.Errorf("file %q not found: want postgres://, mysql://, or an existing sqlite path", raw)
+			return nil, fmt.Errorf("file %q not found: want postgres://, mysql://, or an existing sqlite path", secret.Mask(raw))
 		}
 		sqlDB, err := sql.Open("sqlite", raw)
 		if err != nil {
@@ -214,7 +223,9 @@ func mysqlURLToDSN(raw string) (dsn, dbName string, err error) {
 	}
 	u, err := url.Parse(rawNorm)
 	if err != nil {
-		return "", "", fmt.Errorf("bad connection url: %w", err)
+		// The error quotes the string it was given, which for a
+		// mariadb:// conn is the normalized form.
+		return "", "", fmt.Errorf("bad connection url: %w", scrubConnError(scrubConnError(err, raw), rawNorm))
 	}
 	user := u.User.Username()
 	pass, _ := u.User.Password()
@@ -278,7 +289,7 @@ type Sample struct {
 	// Raw holds the untruncated driver values, parallel to Rows; nil is
 	// SQL NULL. Rows is display text (truncated to 60 chars), so export
 	// and cell editing must read this instead or lose data.
-Raw  [][]any
+	Raw   [][]any
 	Total int64 // -1 when unknown
 }
 
@@ -862,6 +873,7 @@ func (d *DB) PageRows(ctx context.Context, q QualTable, limit, offset int) (*Sam
 	}
 	return d.queryToSample(ctx, qq)
 }
+
 // Query runs an arbitrary SELECT and captures up to 200 rows.
 func (d *DB) Query(ctx context.Context, q string) (*Sample, error) {
 	if d.Engine != nil {

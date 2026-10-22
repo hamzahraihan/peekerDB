@@ -11,7 +11,7 @@ import (
 
 	"github.com/atotto/clipboard"
 
-	"github.com/hamzahraihan/peekerDB/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 )
 
 // Copy-query support: the TUI captures the mouse, so terminal text
@@ -66,7 +66,7 @@ func scrubConnSecrets(text, connStr string) string {
 	if connStr == "" {
 		return text
 	}
-	text = strings.ReplaceAll(text, connStr, saved.Mask(connStr))
+	text = strings.ReplaceAll(text, connStr, secret.Mask(connStr))
 	for _, pass := range connPasswordForms(connStr) {
 		text = strings.ReplaceAll(text, pass, "***")
 	}
@@ -97,7 +97,7 @@ func connPasswordForms(connStr string) []string {
 		}
 	}
 	// The raw DSN form: user:pass@tcp(host:3306)/db
-	if pass, ok := saved.Password(connStr); ok {
+	if pass, ok := secret.Password(connStr); ok {
 		add(pass)
 	}
 	return out

@@ -23,7 +23,7 @@ func openMongo(raw string) (Engine, string, error) {
 	opts := options.Client().ApplyURI(raw)
 	client, err := mongo.Connect(opts)
 	if err != nil {
-		return nil, "", fmt.Errorf("mongo connection error: %w", err)
+		return nil, "", fmt.Errorf("mongo connection error: %w", scrubConnError(err, raw))
 	}
 	dbName := "test"
 	if u, err := url.Parse(raw); err == nil && u.Path != "" && u.Path != "/" {

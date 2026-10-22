@@ -6,6 +6,7 @@ import (
 
 	dbpkg "github.com/hamzahraihan/peekerDB/internal/db"
 	"github.com/hamzahraihan/peekerDB/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 )
 
 func TestHistoryModalWorkflow(t *testing.T) {
@@ -14,9 +15,9 @@ func TestHistoryModalWorkflow(t *testing.T) {
 	m.queryFocus = 0 // editor focused
 	m.connStr = "postgres://localhost/testdb"
 	m.history = &saved.History{}
-	m.history.Add("SELECT * FROM users", saved.Mask(m.connStr))
-	m.history.Add("SELECT count(*) FROM orders", saved.Mask(m.connStr))
-	m.history.Add("INSERT INTO items VALUES (1)", saved.Mask(m.connStr))
+	m.history.Add("SELECT * FROM users", secret.Mask(m.connStr))
+	m.history.Add("SELECT count(*) FROM orders", secret.Mask(m.connStr))
+	m.history.Add("INSERT INTO items VALUES (1)", secret.Mask(m.connStr))
 
 	// Press ctrl+h to open history modal
 	u, _ := m.Update(testKey("ctrl+h"))
@@ -80,7 +81,7 @@ func TestHistoryModalCopy(t *testing.T) {
 	m.queryFocus = 0
 	m.connStr = "postgres://localhost/testdb"
 	m.history = &saved.History{}
-	m.history.Add("SELECT secret FROM vault", saved.Mask(m.connStr))
+	m.history.Add("SELECT secret FROM vault", secret.Mask(m.connStr))
 
 	u, _ := m.Update(testKey("ctrl+h"))
 	m = u.(Model)
@@ -101,9 +102,9 @@ func TestHistoryModalClampOffsetOnFilterShrink(t *testing.T) {
 	m.connStr = "postgres://localhost/testdb"
 	m.history = &saved.History{}
 	for i := range 10 {
-		m.history.Add(strings.Repeat("SELECT ", i+1), saved.Mask(m.connStr))
+		m.history.Add(strings.Repeat("SELECT ", i+1), secret.Mask(m.connStr))
 	}
-	m.history.Add("SPECIAL QUERY", saved.Mask(m.connStr))
+	m.history.Add("SPECIAL QUERY", secret.Mask(m.connStr))
 
 	u, _ := m.Update(testKey("ctrl+h"))
 	m = u.(Model)

@@ -1,4 +1,4 @@
-package saved
+package secret
 
 // Masking a conn string for display.
 //

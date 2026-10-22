@@ -2,6 +2,7 @@ package saved
 
 import (
 	"encoding/json"
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,7 +32,7 @@ func loadSessionAt(t *testing.T, path string) (*Session, error) {
 func TestSessionRoundTripsBuffers(t *testing.T) {
 	s := tempSession(t)
 	s.ConnProfile = "prod"
-	s.ConnMasked = Mask("postgres://u:hunter2@localhost:5432/db")
+	s.ConnMasked = secret.Mask("postgres://u:hunter2@localhost:5432/db")
 	s.Table = "orders"
 	s.Tab = 3
 	s.PageSize = 25

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hamzahraihan/peekerDB/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 )
 
 var errTestClipboard = errors.New("no clipboard")
@@ -72,7 +72,7 @@ func TestScrubConnSecrets(t *testing.T) {
 	if strings.Contains(got, conn) {
 		t.Fatalf("raw conn string leaked: %q", got)
 	}
-	if !strings.Contains(got, saved.Mask(conn)) {
+	if !strings.Contains(got, secret.Mask(conn)) {
 		t.Fatalf("masked conn must remain: %q", got)
 	}
 }

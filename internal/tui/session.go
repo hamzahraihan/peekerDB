@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/hamzahraihan/peekerDB/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 )
 
 // loadSessionFunc is a seam for tests, which must never read the
@@ -69,7 +70,7 @@ func (m *Model) restoreConn(sess *saved.Session) string {
 	if !ok {
 		return ""
 	}
-	if saved.Mask(p.Conn) != sess.ConnMasked {
+	if secret.Mask(p.Conn) != sess.ConnMasked {
 		return ""
 	}
 	return p.Conn
@@ -92,7 +93,7 @@ func (m Model) fillSession(sess *saved.Session) {
 	sess.Filter = m.explorer.Filter
 	sess.Cur = m.qcur
 	sess.Theme = m.theme
-	sess.ConnMasked = saved.Mask(m.connStr)
+	sess.ConnMasked = secret.Mask(m.connStr)
 	sess.ConnProfile = m.profileNameFor(m.connStr)
 	bufs := m.qbufs
 	if len(bufs) == 0 {
@@ -113,9 +114,9 @@ func (m Model) profileNameFor(connStr string) string {
 	if connStr == "" || m.store == nil {
 		return ""
 	}
-	masked := saved.Mask(connStr)
+	masked := secret.Mask(connStr)
 	for _, p := range m.store.List() {
-		if saved.Mask(p.Conn) == masked {
+		if secret.Mask(p.Conn) == masked {
 			return p.Name
 		}
 	}

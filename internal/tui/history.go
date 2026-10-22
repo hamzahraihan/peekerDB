@@ -9,11 +9,12 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/hamzahraihan/peekerDB/internal/saved"
+	"github.com/hamzahraihan/peekerDB/internal/secret"
 )
 
 // maskedConn is the key history is grouped by. It is the Mask()ed conn
 // string, so the history file never sees a password.
-func (m Model) maskedConn() string { return saved.Mask(m.connStr) }
+func (m Model) maskedConn() string { return secret.Mask(m.connStr) }
 
 // recordHistory appends sql to the history and returns the command that
 // persists it. The write happens off the UI goroutine.
